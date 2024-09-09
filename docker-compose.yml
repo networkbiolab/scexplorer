@@ -1,0 +1,120 @@
+version: '3.8'
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile.nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+      - frontend
+    networks:
+      - slurm-net
+    volumes:
+      - app_volume:/app/uploads
+  app:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    networks:
+      - slurm-net
+    hostname: app
+    container_name: app
+    ports:
+      - "8000:8000"
+    environment:
+      - ROOT_PATH=/backend
+    depends_on:
+      - munge
+    volumes:
+      - munge_socket_volume:/run/munge
+      - munge_volume:/etc/munge
+      - app_volume:/app
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    networks:
+      - slurm-net
+    hostname: frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - munge
+      - slurmd
+      - slurmctld
+      - app
+    volumes:
+      - app_volume:/app
+
+  slurmctld:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.slurmctld
+    hostname: slurmctld
+    container_name: slurmctld
+    networks:
+      - slurm-net
+    ports:
+      - "6817:6817"
+    volumes:
+      - slurmctld_data:/var/spool/slurmctld
+      - munge_volume:/etc/munge
+      - munge_socket_volume:/run/munge
+    depends_on:
+      - munge
+    restart: "on-failure"
+    
+  slurmd:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.slurmd
+    networks:
+      - slurm-net
+    ports:
+      - "6818:6818"
+    volumes:
+      - slurmd_data:/var/spool/
+      - munge_socket_volume:/run/munge
+      - munge_volume:/etc/munge
+      - app_volume:/app
+    hostname: slurmd
+    container_name: slurmd
+    restart: "on-failure"
+    depends_on:
+      - slurmctld
+      - munge
+
+  munge:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.munge
+    hostname: munge
+    container_name: munge
+    networks:
+      - slurm-net
+    volumes:
+      - munge_socket_volume:/run/munge
+      - munge_volume:/etc/munge
+
+
+networks:
+  slurm-net:
+    driver: bridge
+
+volumes:
+  app_volume:
+    driver: local
+  slurmctld_data:
+    driver: local
+  munge_volume:
+    driver: local
+  slurmd_data:
+    driver: local
+  munge_socket_volume:
+    driver: local
