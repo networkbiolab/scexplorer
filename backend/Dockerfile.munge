@@ -1,0 +1,21 @@
+FROM python:3.11.5
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG MUNGEUSER=1005
+
+# Instalación de Munge
+RUN groupadd -g $MUNGEUSER munge \
+    && useradd -m -c "MUNGE Uid 'N' Gid Emporium" -d /var/lib/munge -u $MUNGEUSER -g munge -s /sbin/nologin munge \
+    && apt-get update && apt-get install -y munge \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear directorio para el socket de Munge y configurar permisos
+RUN mkdir -p /run/munge \
+    && chown -R munge: /etc/munge/ /var/log/munge/ /var/lib/munge/ /run/munge/ \
+    && chmod 0700 /etc/munge/ && chmod 0711 /var/log/munge/ /var/lib/munge/ /run/munge/
+RUN chown munge: /etc/munge/munge.key \
+    && chmod 400 /etc/munge/munge.key
+# Generar clave de Munge
+USER munge
+ENTRYPOINT /usr/sbin/mungekey -c -f && exec munged --foreground
+

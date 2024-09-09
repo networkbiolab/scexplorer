@@ -1,0 +1,14 @@
+FROM node:16
+ARG USER=1005
+
+RUN groupadd -g $USER slurm \
+    && useradd -m -c "MUNGE Uid 'N' Gid Emporium" -d /var/lib/slurm -u $USER -g slurm -s /sbin/nologin slurm
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN chown -R slurm:slurm /usr/src/app
+
+EXPOSE 3000
+USER slurm
+CMD ["node", "app.js"]

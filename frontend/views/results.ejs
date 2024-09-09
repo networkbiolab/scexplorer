@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>scExplorer</title>
+    <link rel="icon" href="/scexplorer/images/logo_sc_explorer_v1.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/scexplorer/css/styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+
+<body>
+    <aside class="sidebar">
+        <img src="/scexplorer/images/logo_sc_explorer_v1.png" alt="scExplorer logo" class="sidebar-logo" />
+        <h1 class="sidebar-title">scExplorer</h1>
+        <ul>
+            <li><a href="/scexplorer/"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="/scexplorer/integration"><i class="fas fa-layer-group"></i>Integration</a></li>
+            <li><a href="/scexplorer/upload"><span class="step-number">0</span> <i class="fas fa-upload"></i> Upload</a></li>
+            <li><a href="/scexplorer/preprocess"><span class="step-number">1</span> <i class="fas fa-cogs"></i> Preprocess</a></li>
+            <li><a href="/scexplorer/embedding"><span class="step-number">2</span> <i class="fas fa-vector-square"></i> Embedding</a></li>
+            <li><a href="/scexplorer/dea"><span class="step-number">3</span> <i class="fas fa-chart-bar"></i> DEA</a></li>
+            <li><a href="/scexplorer/visualization"><span class="step-number">4</span> <i class="fas fa-chart-area"></i> Visualization</a></li>
+            <li><a href="/scexplorer/results"><span class="step-number">5</span> <i class="fas fa-poll"></i> Results</a></li>
+        </ul>
+        <div class="resizer"></div>
+        <i id="toggleSidebarBtn" class="fas fa-angle-double-left white-icon" onclick="toggleSidebar()"></i>
+    </aside>
+    <button id="showSidebarBtn" class="show-sidebar-btn" onclick="toggleSidebar()"><i class="fas fa-angle-double-right"></i></button>
+
+    <section>
+
+
+        <div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:100;">
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);">
+                <div style="color:white; font-size:20px; text-align:center;">
+                    <p>Running...</p>
+                    <img src="/scexplorer/images/loading3.svg" alt="Loading..." style="display:block; margin:auto;" />
+                </div>
+            </div>
+        </div>
+
+        <div class="results-container">
+            <h2><i class="fas fa-poll"></i> Results</h2>
+        </div>
+        <div class="category-box">
+            <h3>Raw Data</h3>
+            <div id="analysisInfoBox"></div>
+        </div>
+        <div class="category-box">
+            <h3>Quality Control Metrics</h3>
+            <div class="plots-container"></div>
+        </div>
+        <div class="category-box" id="preprocessingBox">
+            <h3>Preprocessing</h3>
+            <div class="preprocessing-plots-container"></div>
+        </div>
+        <div class="category-box">
+            <h3>Embedding</h3>
+            <div class="embedding-plots-container"></div>
+        </div>
+        <div class="category-box">
+            <h3>Differential Expression Analysis</h3>
+            <div class="dea-plots-container"></div>
+        </div>
+
+        <div class="button-container">
+            <div class="upload-btn">
+                <button id="download">Download</button>
+            </div>
+        </div>
+
+        <script>
+            const BASE_URL = "http://apps.cienciavida.org/backend"; // Configurable server base URL
+
+            // Separate containers for each section
+            const preprocessingContainer = document.querySelector(".preprocessing-plots-container");
+            const embeddingContainer = document.querySelector(".embedding-plots-container");
+            const deaContainer = document.querySelector(".dea-plots-container");
+
+            window.onload = function () {
+                displayInitialInfo();
+                loadInitialPlots();
+                displayPreprocessingPlots();
+                displayEmbeddingPlots();
+                displayDEAPlots();
+            };
+
+            function displayInitialInfo() {
+                const uuid = sessionStorage.getItem("uuid");
+                const analysisNameValue = sessionStorage.getItem("analysisName");
+                document.getElementById("analysisInfoBox").innerHTML = `Analysis Name: ${analysisNameValue}<br>UUID: ${uuid} <i class="fas fa-copy" onclick="copyToClipboard('${uuid}')" style="cursor: pointer; font-size: 14px;"></i>`;
+            }
+
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(function() {
+                }, function(err) {
+                    console.error('Could not copy text: ', err);
+                });
+            }
+
+            function loadInitialPlots() {
+                const plotsPath = JSON.parse(sessionStorage.getItem("plots_path"));
+
+                if (plotsPath && plotsPath.length > 0) {
+                    plotsPath.forEach((plotUrl) => {
+                        displayRawDataPlot(plotUrl, ".plots-container");
+                    });
+                }
+            }
+
+            function displayRawDataPlot(plotUrl, containerSelector) {
+                const container = document.querySelector(containerSelector);
+                const column = document.createElement("div");
+                column.className = "column third";
+
+                const iframe = document.createElement("iframe");
+                iframe.src = `${BASE_URL}/${plotUrl}`;
+                iframe.style.width = "100%";
+                iframe.style.height = "416px";
+                iframe.style.border = "none";
+                iframe.onload = function () {
+                    const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+                    const img = iframeDocument.querySelector('img');
+                    if (img) {
+                        img.style.maxWidth = '100%';
+                        img.style.maxHeight = '100%';
+                    }
+                };
+                iframe.style.marginTop = "10px";
+
+                column.appendChild(iframe);
+                container.appendChild(column);
+            }
+
+            function displayPreprocessingPlots() {
+                const preprocessingPlotPaths = JSON.parse(sessionStorage.getItem("preprocess_path"));
+                preprocessingContainer.innerHTML = "";
+
+                if (preprocessingPlotPaths && preprocessingPlotPaths.length > 0) {
+                    let row;
+                    preprocessingPlotPaths.forEach((plotUrl, index) => {
+                        if (index % 3 === 0) {
+                            row = document.createElement("div");
+                            row.className = "row";
+                            preprocessingContainer.appendChild(row);
+                        }
+                        displayPlotForPreprocessing(plotUrl, ".preprocessing-plots-container .row:last-child");
+                    });
+                }
+            }
+
+            function displayPlotForPreprocessing(plotUrl, containerSelector) {
+                const container = document.querySelector(containerSelector);
+                const column = document.createElement("div");
+                column.className = "column third";
+
+                const iframe = document.createElement("iframe");
+                iframe.src = `${BASE_URL}/plots_preprocessing/${plotUrl}`;
+                iframe.style.width = "100%";
+                iframe.style.height = "416px";
+                iframe.style.border = "none";
+                iframe.style.marginTop = "10px";
+                iframe.onload = function () {
+                    const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+                    const img = iframeDocument.querySelector('img');
+                    if (img) {
+                        img.style.maxWidth = '100%';
+                        img.style.maxHeight = '100%';
+                    }
+                };
+                column.appendChild(iframe);
+                container.appendChild(column);
+            }
+
+            function displayEmbeddingPlots() {
+                const embeddingPlotPaths = JSON.parse(sessionStorage.getItem("embedding_plot_paths"));
+                embeddingContainer.innerHTML = "";
+
+                if (embeddingPlotPaths && embeddingPlotPaths.length > 0) {
+                    let row;
+                    embeddingPlotPaths.forEach((plotUrl, index) => {
+                        if (index % 2 === 0) {
+                            row = document.createElement("div");
+                            row.className = "row";
+                            embeddingContainer.appendChild(row);
+                        }
+                        displayPlotForEmbedding(plotUrl, ".embedding-plots-container .row:last-child");
+                    });
+                }
+            }
+
+            function displayPlotForEmbedding(plotUrl, containerSelector) {
+                const container = document.querySelector(containerSelector);
+                const column = document.createElement("div");
+                column.className = "column third";
+
+                const iframe = document.createElement("iframe");
+                iframe.src = `${BASE_URL}/plots_embedding/${plotUrl}`;
+                iframe.style.width = "100%";
+                iframe.style.height = "100%";
+                iframe.style.border = "none";
+                iframe.style.marginTop = "10px";
+                iframe.onload = function () {
+                    const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+                    const img = iframeDocument.querySelector('img');
+                    if (img) {
+                        img.style.maxWidth = '100%';
+                        img.style.maxHeight = '100%';
+                    }
+                };
+                column.appendChild(iframe);
+                container.appendChild(column);
+            }
+
+            function displayDEAPlots() {
+                const deaPlotPaths = JSON.parse(sessionStorage.getItem("dea_plot_paths"));
+                deaContainer.innerHTML = "";
+
+                if (deaPlotPaths && deaPlotPaths.length > 0) {
+                    deaPlotPaths.forEach((plotUrl) => {
+                        const row = document.createElement("div");
+                        row.className = "row";
+                        deaContainer.appendChild(row);
+                        displayPlotForDEA(plotUrl, ".dea-plots-container .row:last-child");
+                    });
+                }
+            }
+
+            function displayPlotForDEA(plotUrl, containerSelector) {
+                const container = document.querySelector(containerSelector);
+                const column = document.createElement("div");
+                column.className = "column third";
+
+                const iframe = document.createElement("iframe");
+                iframe.src = `${BASE_URL}/plots_dea/${plotUrl}`;
+                iframe.style.width = "100%";
+                iframe.style.height = "416px";
+                iframe.style.border = "none";
+                iframe.style.marginTop = "10px";
+                iframe.onload = function () {
+                    const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+                    const img = iframeDocument.querySelector('img');
+                    if (img) {
+                        img.style.maxWidth = '100%';
+                        img.style.maxHeight = '100%';
+                    }
+                };
+                column.appendChild(iframe);
+                container.appendChild(column);
+            }
+
+            document.getElementById('download').addEventListener('click', function() {
+                showLoadingOverlay('Running...');
+                const uuid = sessionStorage.getItem("uuid");
+                if (uuid) {
+                    const url = `${BASE_URL}/export-files/${uuid}`;
+                    fetch(url)
+                        .then(response => {
+                            if (response.ok) return response.blob();
+                            throw new Error('Network response was not ok.');
+                        })
+                        .then(blob => {
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.style.display = 'none';
+                            a.href = url;
+                            a.download = `${uuid}.zip`;  // Asigna un nombre de archivo
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                        })
+                        .catch(error => console.error('Error downloading the file:', error))
+                        .finally(() => hideLoadingOverlay());
+                } else {
+                    alert('No UUID found. Please ensure you have a valid session.');
+                    hideLoadingOverlay();
+                }
+            });
+
+            function showLoadingOverlay(message) {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                const loadingText = document.querySelector('#loadingOverlay p');
+                loadingText.textContent = message;
+                loadingOverlay.style.display = 'block';
+            }
+
+            function hideLoadingOverlay() {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+
+
+            function toggleSidebar() {
+                const sidebar = document.querySelector('.sidebar');
+                const sections = document.querySelectorAll('section, .embeding-box, .params-row, .plots-container');
+                const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+                const showSidebarBtn = document.getElementById('showSidebarBtn');
+    
+                if (sidebar.classList.contains('hidden')) {
+                    sidebar.classList.remove('hidden');
+                    sections.forEach(section => {
+                        section.style.marginLeft = '250px';
+                        section.style.width = '80%';
+                    });
+                    toggleSidebarBtn.style.display = 'block';
+                    showSidebarBtn.style.display = 'none';
+                } else {
+                    sidebar.classList.add('hidden');
+                    sections.forEach(section => {
+                        section.style.marginLeft = '150px';
+                        section.style.width = '85%';
+                    });
+                    toggleSidebarBtn.style.display = 'none';
+                    showSidebarBtn.style.display = 'block';
+                }
+            }
+    
+            function showSidebar() {
+                const sidebar = document.querySelector('.sidebar');
+                const sections = document.querySelectorAll('section, .embeding-box, .params-row, .plots-container');
+                const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+                const showSidebarBtn = document.getElementById('showSidebarBtn');
+    
+                sidebar.classList.remove('hidden');
+                sections.forEach(section => {
+                    section.style.marginLeft = '250px';
+                    section.style.width = '80%';
+                });
+                toggleSidebarBtn.style.display = 'block';
+                showSidebarBtn.style.display = 'none';
+            }
+
+            window.addEventListener("scroll", function () {
+                const showSidebarContainer = document.getElementById("showSidebarContainer");
+                const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                const newPosition = 20 + scrollTop;
+                showSidebarContainer.style.bottom = newPosition + "px";
+            });
+
+            const showSidebarBtn = document.getElementById('showSidebarBtn');
+
+            window.onscroll = function () {
+                if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                    showSidebarBtn.style.display = 'block';
+                } else {
+                    showSidebarBtn.style.display = 'none';
+                }
+            };
+        </script>
+    </section>
+</body>
+
+</html>

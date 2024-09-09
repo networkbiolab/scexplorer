@@ -1,0 +1,67 @@
+FROM python:3.11.5
+ARG SLURMUSER=1005
+ARG SLURM_VERSION=24.05.1
+
+# Create the slurm user and group
+RUN groupadd -g $SLURMUSER slurm \
+    && useradd -m -c "Slurm workload manager" -d /var/lib/slurm -u $SLURMUSER -g slurm -s /bin/bash slurm
+
+# Install necessary packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+build-essential \
+libfftw3-dev \
+gfortran \
+liblapack-dev \
+liblapack3 \
+libopenblas-dev \
+r-base \
+libpcre2-dev \
+libhdf5-dev \
+liblzma-dev \
+libbz2-dev \
+libicu-dev \
+libblas-dev \
+libcurl4-gnutls-dev \
+libssl-dev \
+libxml2-dev \
+nano wget gcc make munge libmunge-dev libmunge2 libssl-dev libpam0g-dev  \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/* \
+&& pip install --no-cache-dir --upgrade pip setuptools wheel
+
+
+# Install Slurm from source
+RUN wget https://download.schedmd.com/slurm/slurm-${SLURM_VERSION}.tar.bz2 \
+    && tar -xjf slurm-${SLURM_VERSION}.tar.bz2 \
+    && cd slurm-${SLURM_VERSION}  \
+    && ./configure \
+    && make \
+    && make install
+
+# Install R packages
+RUN R -e "install.packages('BiocManager', repos='http://cran.rstudio.com/')" \
+    && R -e "install.packages('remotes', repos='http://cran.rstudio.com/')" \
+    && R -e "remotes::install_version('Matrix', version='1.6.4', repos='https://cloud.r-project.org/')" \
+    && R -e "BiocManager::install('Seurat')" \
+    && R -e "remotes::install_github('mojaveazure/seurat-disk')" \
+    && R -e "install.packages('clustree', repos='http://cran.rstudio.com/')" \
+    && R -e "install.packages('svglite', repos='http://cran.rstudio.com/')" \
+    && R -e "install.packages('anndata', repos='http://cran.rstudio.com/')" 
+    # && R -e "BiocManager::install('zellkonverter')"
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Setup permissions
+RUN chown -R slurm:slurm /usr/local/lib/python3.11/site-packages/
+COPY slurm.conf /etc/slurm/slurm.conf
+COPY slurm.conf /usr/local/etc/slurm.conf
+
+RUN mkdir -p /var/spool/slurmd \
+    && chown slurm: /var/spool/slurmd \
+    && chmod 0755 /var/spool/slurmd
+
+EXPOSE 6818
+USER slurm
+
+CMD ["slurmd", "-Dvvv"]

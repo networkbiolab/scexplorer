@@ -1,0 +1,36 @@
+FROM python:3.11.5
+
+ARG SLURMUSER=1005
+ARG SLURM_VERSION=24.05.1 # Specify the version you want
+
+RUN groupadd -g $SLURMUSER slurm \
+    && useradd -m -c "Slurm workload manager" -d /var/lib/slurm -u $SLURMUSER -g slurm -s /bin/bash slurm
+
+# Update packages
+RUN apt-get update && apt-get install -y wget gcc make munge libmunge-dev libmunge2 libssl-dev libpam0g-dev  \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download and install Slurm from source
+RUN wget https://download.schedmd.com/slurm/slurm-${SLURM_VERSION}.tar.bz2 \
+    && tar -xjf slurm-${SLURM_VERSION}.tar.bz2 \
+    && cd slurm-${SLURM_VERSION}  \
+    && ./configure \
+    && make \
+    && make install
+
+RUN mkdir -p /var/spool/slurmctld 
+RUN chown slurm:slurm /var/spool/slurmctld
+RUN chmod 755 /var/spool/slurmctld
+
+# Place the slurm configuration file
+COPY slurm.conf /etc/slurm/slurm.conf
+COPY slurm.conf /usr/local/etc/slurm.conf
+
+# RUN chown slurm:slurm /etc/slurm/slurm.conf
+
+EXPOSE 6817
+
+# Run as the slurm user
+# USER slurm
+
+CMD ["slurmctld", "-Dvvv"]

@@ -1,0 +1,26 @@
+FROM nginx:latest
+
+# Create a new group and user
+# RUN groupadd -g 1005 slurm && \
+#     useradd -r -u 1005 -g slurm -s /bin/false -c "slurm user" slurm
+
+# Copy your custom Nginx configuration files
+COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
+# Assuming you are copying a base nginx.conf or it already exists in the image
+# COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
+
+# Modify the nginx.conf to change the PID file location
+# RUN sed -i 's|/var/run/nginx.pid|/var/tmp/nginx.pid|' /etc/nginx/nginx.conf
+
+# # Ensure the directory for the new PID file exists and is owned by the non-root user
+# RUN mkdir -p /var/tmp && chown -R slurm:slurm /var/tmp
+# RUN mkdir -p /app/uploads && chown -R slurm:slurm /app/uploads
+
+# Set ownership and permissions
+# RUN chown -R slurm:slurm /var/cache/nginx /var/log/nginx /etc/nginx
+
+EXPOSE 80
+
+# USER slurm
+
+CMD ["nginx", "-g", "daemon off;"]

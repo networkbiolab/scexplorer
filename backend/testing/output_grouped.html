@@ -1,0 +1,66 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@9.0.0/dist/mermaid.min.js"></script>
+        <title>Mermaid Graph</title>
+    </head>
+    <body>
+        <div class="mermaid">
+        graph TD
+X((X: Main Data))
+X --> obs[obs]
+X --> var[var]
+X --> layers[layers]
+X --> uns[uns]
+X --> obsm[obsm]
+X --> varm[varm]
+X --> obsp[obsp]
+obsp --> obs_n_genes_by_counts[n_genes_by_counts]
+obsp --> obs_log1p_n_genes_by_counts[log1p_n_genes_by_counts]
+obsp --> obs_total_counts[total_counts]
+obsp --> obs_log1p_total_counts[log1p_total_counts]
+obsp --> obs_pct_counts_in_top_50_genes[pct_counts_in_top_50_genes]
+obsp --> obs_pct_counts_in_top_100_genes[pct_counts_in_top_100_genes]
+obsp --> obs_pct_counts_in_top_200_genes[pct_counts_in_top_200_genes]
+obsp --> obs_pct_counts_in_top_500_genes[pct_counts_in_top_500_genes]
+obsp --> obs_total_counts_mito[total_counts_mito]
+obsp --> obs_log1p_total_counts_mito[log1p_total_counts_mito]
+obsp --> obs_pct_counts_mito[pct_counts_mito]
+obsp --> obs_n_genes[n_genes]
+obsp --> obs_leiden[leiden]
+obsp --> var_gene_ids[gene_ids]
+obsp --> var_mito[mito]
+obsp --> var_n_cells_by_counts[n_cells_by_counts]
+obsp --> var_mean_counts[mean_counts]
+obsp --> var_log1p_mean_counts[log1p_mean_counts]
+obsp --> var_pct_dropout_by_counts[pct_dropout_by_counts]
+obsp --> var_total_counts[total_counts]
+obsp --> var_log1p_total_counts[log1p_total_counts]
+obsp --> var_n_cells[n_cells]
+obsp --> var_highly_variable[highly_variable]
+obsp --> var_means[means]
+obsp --> var_dispersions[dispersions]
+obsp --> var_dispersions_norm[dispersions_norm]
+obsp --> uns_log1p[log1p]
+obsp --> uns_hvg[hvg]
+obsp --> uns_pca[pca]
+obsp --> uns_neighbors[neighbors]
+obsp --> uns_umap[umap]
+obsp --> uns_leiden[leiden]
+obsp --> uns_dendrogram_leiden[dendrogram_leiden]
+obsp --> obsm_X_pca[X_pca]
+obsp --> obsm_X_umap[X_umap]
+obsp --> varm_PCs[PCs]
+obsp --> obsp_distances[distances]
+obsp --> obsp_connectivities[connectivities]
+
+        </div>
+        <script>
+            mermaid.initialize({startOnLoad: true});
+        </script>
+    </body>
+    </html>
+    

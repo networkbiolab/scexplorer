@@ -1,0 +1,65 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@9.0.0/dist/mermaid.min.js"></script>
+        <title>Mermaid Graph</title>
+    </head>
+    <body>
+        <div class="mermaid">
+        graph TD
+X --> obs
+obs --> var
+var --> layers
+layers --> uns
+uns --> obsm
+obsm --> varm
+varm --> obsp
+obs --> obs_n_genes_by_counts[n_genes_by_counts]
+obs --> obs_log1p_n_genes_by_counts[log1p_n_genes_by_counts]
+obs --> obs_total_counts[total_counts]
+obs --> obs_log1p_total_counts[log1p_total_counts]
+obs --> obs_pct_counts_in_top_50_genes[pct_counts_in_top_50_genes]
+obs --> obs_pct_counts_in_top_100_genes[pct_counts_in_top_100_genes]
+obs --> obs_pct_counts_in_top_200_genes[pct_counts_in_top_200_genes]
+obs --> obs_pct_counts_in_top_500_genes[pct_counts_in_top_500_genes]
+obs --> obs_total_counts_mito[total_counts_mito]
+obs --> obs_log1p_total_counts_mito[log1p_total_counts_mito]
+obs --> obs_pct_counts_mito[pct_counts_mito]
+obs --> obs_n_genes[n_genes]
+obs --> obs_leiden[leiden]
+var --> var_gene_ids[gene_ids]
+var --> var_mito[mito]
+var --> var_n_cells_by_counts[n_cells_by_counts]
+var --> var_mean_counts[mean_counts]
+var --> var_log1p_mean_counts[log1p_mean_counts]
+var --> var_pct_dropout_by_counts[pct_dropout_by_counts]
+var --> var_total_counts[total_counts]
+var --> var_log1p_total_counts[log1p_total_counts]
+var --> var_n_cells[n_cells]
+var --> var_highly_variable[highly_variable]
+var --> var_means[means]
+var --> var_dispersions[dispersions]
+var --> var_dispersions_norm[dispersions_norm]
+uns --> uns_log1p[log1p]
+uns --> uns_hvg[hvg]
+uns --> uns_pca[pca]
+uns --> uns_neighbors[neighbors]
+uns --> uns_umap[umap]
+uns --> uns_leiden[leiden]
+uns --> uns_dendrogram_leiden[dendrogram_leiden]
+obsm --> obsm_X_pca[X_pca]
+obsm --> obsm_X_umap[X_umap]
+varm --> varm_PCs[PCs]
+obsp --> obsp_distances[distances]
+obsp --> obsp_connectivities[connectivities]
+
+        </div>
+        <script>
+            mermaid.initialize({startOnLoad: true});
+        </script>
+    </body>
+    </html>
+    

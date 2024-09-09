@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>scExplorer</title>
+    <link rel="icon" href="/scexplorer/images/logo_sc_explorer_v1.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.css" rel="stylesheet">
+    <link rel="stylesheet" href="/scexplorer/css/styles.css">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.js"></script>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <img src="/scexplorer/images/logo_sc_explorer_v1.png" alt="scExplorer logo" class="sidebar-logo" />
+        <h1 class="sidebar-title">scExplorer</h1>
+        <ul>
+            <li><a href="/scexplorer/"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="/scexplorer/integration"><i class="fas fa-layer-group"></i>Integration</a></li>
+            <li><a href="/scexplorer/upload"><span class="step-number">0</span> <i class="fas fa-upload"></i> Upload</a></li>
+            <li><a href="/scexplorer/preprocess"><span class="step-number">1</span> <i class="fas fa-cogs"></i> Preprocess</a></li>
+            <li><a href="/scexplorer/embedding"><span class="step-number">2</span> <i class="fas fa-vector-square"></i> Embedding</a></li>
+            <li><a href="/scexplorer/dea"><span class="step-number">3</span> <i class="fas fa-chart-bar"></i> DEA</a></li>
+            <li><a href="/scexplorer/visualization"><span class="step-number">4</span> <i class="fas fa-chart-area"></i> Visualization</a></li>
+            <li><a href="/scexplorer/results"><span class="step-number">5</span> <i class="fas fa-poll"></i> Results</a></li>
+        </ul>
+        <div class="resizer"></div>
+        <i id="toggleSidebarBtn" class="fas fa-angle-double-left white-icon" onclick="toggleSidebar()"></i>
+    </aside>
+    <button id="showSidebarBtn" class="show-sidebar-btn" onclick="toggleSidebar()"><i class="fas fa-angle-double-right"></i></button>
+
+    <section>
+        <div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:100;">
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);">
+                <div style="color:white; font-size:20px; text-align:center;">
+                    <p>Embedding...</p>
+                    <img src="/scexplorer/images/loading3.svg" alt="Loading..." style="display:block; margin:auto;" />
+                </div>
+            </div>
+        </div>
+
+
+        <div class="header-buttons">
+            <button onclick="openHelpModal()">Help</button>
+        </div>
+        <h2><i class="fas fa-vector-square"></i> Embedding</h2>
+        <div id="analysisInfoBox"></div>
+    </section>
+
+    <div class="embeding-box">
+        <h3>PCA Parameters</h3>
+        <div class="params-row">
+            <div class="input-group">
+                <label for="top HVG">N° High Variable Genes:
+                    <i class="fas fa-info-circle" style="color:#000000; cursor: pointer;">
+                        <span class="tooltip">Set the number of hvg for dimensional reduction analysis.</span>
+                    </i>
+                </label>
+                <input type="number" id="n_hvg" name="n_hvg" placeholder="Enter N° of HVG" value="2000" required />
+            </div>
+            <div class="input-group">
+                <label for="flavor_hvg">HVG Method:
+                    <i class="fas fa-info-circle" style="color:#000000; cursor: pointer;">
+                        <span class="tooltip">Select the method to define the hvg.</span>
+                    </i>
+                </label>
+                <select id="flavor_hvg" name="flavor_hvg">
+                    <option value="seurat">Seurat</option>
+                    <option value="cell_ranger">Cell Ranger</option>
+                </select>
+            </div>
+            <div class="upload-btn">
+                <button id="startPCAEmbedding">Run</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="PCAResults" class="embeding-box" style="display: none;">
+        <h3>PCA Results</h3>
+        <div id="PCAplotsContainer" class="plots-container"></div>
+    </div>
+
+    <div id="UMAPParameters" class="embeding-box" style="display: none;">
+        <h3>UMAP Parameters</h3>
+        <div class="params-row">
+            <div class="input-group">
+                <label for="n_pcs">N PCs:
+                    <i class="fas fa-info-circle" style="color:#000000; cursor: pointer;">
+                        <span class="tooltip">Set the N° of Principal Components.</span>
+                    </i>
+                </label>
+                <input type="text" id="n_pcs" name="n_pcs" placeholder="Enter n_pcs value" value="15" required />
+            </div>
+            <div class="input-group">
+                <label for="n_neighbors">N° Neighbors:
+                    <i class="fas fa-info-circle" style="color:#000000; cursor: pointer;">
+                        <span class="tooltip">Set the N° of neighbors for the community detection algorithm.</span>
+                    </i>
+                </label>
+                <input type="number" id="n_neighbors" name="n_neighbors" placeholder="Enter n_neighbors value" value="15" required />
+            </div>
+            <div class="input-group">
+                <label for="resolution">Leiden Resolution:
+                    <i class="fas fa-info-circle" style="color:#000000; cursor: pointer;">
+                        <span class="tooltip">Set the resolution for cluster identification.</span>
+                    </i>
+                </label>
+                <input type="number" id="resolution" name="resolution" placeholder="Enter Leiden resolution value" value="1" required />
+            </div>
+            <div class="upload-btn">
+                <button id="startEmbedding">Run</button>
+            </div>
+        </div>
+    </div>
+    <div id="helpModal" class="modal_help">
+        <div class="modal_help-content">
+            <span class="close" onclick="closeHelpModal()">&times;</span>
+            <h2>Embedding</h2>
+            <p>
+                scRNA-seq experiments produce data with high dimensions in the number of genes and cells. A 10X library could be composed of ~ 10,000 cells with ~ 30,000 detected genes (numbers can vary depending on sequencing depth and handing quality). However, not all genes provide relevant information for the analysis. In this regard, the next step is to select the most variable genes (MVG). In (1), you can indicate the desired number of genes to calculate and further be used for Principal Component Analysis (PCA). Next, you must indicate the method for MVG calculation (2). Here, we have two methods for MVG selection: Seurat and Cell Ranger. For this tutorial we select 2000 MVG and Seurat as method (default parameters) Click on Run (3) to continue.     
+                <img src="/scexplorer/images/pre_pca.png" alt="Upload Tutorial Image" style="max-width: 100%; height: auto; margin-bottom: 20px;" />
+
+            
+            <!-- Create the blue light rounded box with black dashed border -->
+            <div style="
+                background-color: #e0f7fa;
+                border: 2px dashed black;
+                border-radius: 10px;
+                padding: 20px;
+                margin: 20px 0;
+                font-family: 'Poppins', sans-serif;
+            ">
+                <strong>¿How many genes use for MVG selection and what method use for calculation?</strong>
+                <p>
+                    The number of optimal MVG will depend on the complexity of the dataset. Usually, a range between 1,000 and 5,000 MVG works well across single-cell data. Thus, we encourage users to test different numbers of MVG. MVG should be determined after quality control, to guarantee that low-expressed genes and low-quality cells does not interfere with the analysis. Also, is important to determine whether the data has technical noise to avoid selecting MVG for only one batch. If your data has batch effect, you can correct and integrate it in the Integration section. We offer two flavors for MVG selection: Seurat and cellranger. MVG are identified based on their mean and dispersion (variance/mean). For more details about MVG method selection please see [2, 3, 4] 
+                </p>
+            </div>
+            <p>
+                After running the analysis, you will see three plots for PC1 and PC2 highlighting: % of Mitochondrial Genes (1), Total Counts (2), and number of Genes per Counts (3). Plotting the top 2 PCs is useful to see undesired features such as batch and QC metrics generating significant variation in your dataset. In (4) you can see the top 25 PC ranked according to the Variance Ratio and in red the suggested number of PC to be used for downstream analysis. For this tutorial, we will use the first 10 PC but we encourage users to explore using more or less PC. In addition, below you will find a clustree (5) which is a commonly used tool (particularly in R/Seurat) to explore and interpret how clusters change across different levels of clustering resolution. This visualization is especially useful when you apply clustering algorithms, like Louvain or Leiden, which allow for tuning a resolution parameter that influences the granularity of the resulting clusters. Here, clustree is calculated using a Shared Near Neighbors (SNN) graph and will be useful for users to use it as a reference during the construction of the K-Near Neighbors (KNN) graph downstream.             </p>
+    
+            <!-- Add the uploaded image below the text -->
+            <img src="/scexplorer/images/post_pca.png" alt="QC Plot Tutorial Image" style="max-width: 100%; height: auto; margin-bottom: 20px;" />
+            <img src="/scexplorer/images/post_pca_clustree.png" alt="QC Plot Tutorial Image" style="max-width: 100%; height: auto; margin-bottom: 20px;" />
+
+            <div style="
+                background-color: #e0f7fa;
+                border: 2px dashed black;
+                border-radius: 10px;
+                padding: 20px;
+                margin: 20px 0;
+                font-family: 'Poppins', sans-serif;
+            ">
+            <p>
+                In the context of single-cell genomics, a principal component (PC) is a mathematical construct derived from principal component analysis (PCA), a dimensionality reduction technique used to simplify complex datasets. Each PC represents a direction in the data that captures as much variance as possible. The first principal component (PC1) captures the most variance, the second principal component (PC2) captures the second most, and so on, with each subsequent component being orthogonal (uncorrelated) to the others. PCA is useful in single-cell genomics because of the high-dimensional nature of the data, where each cell is represented by thousands of gene expression values. By reducing the data to just a few principal components, you can visualize the relationships between cells in a lower-dimensional space without losing much of the information.             </p>
+
+            </div>            
+            <p>
+                Once you are satisfied with the PC analysis, the next step is to construct the KNN graph from the desired number of PCs and embedded in two dimensions for visualization with Uniform Manifold Approximation and Projection (UMAP). In (1) you can set the desired number of PC and in (2) the number of neighbors for community detection. Also, in (3) you need to set the resolution for cluster identification using Leiden graph-clustering method. For this tutorial, we will set the number of PC to 15, number of neighbors to 15, and Leiden resolution to 1 (default parameters). We encourage users to explore multiple parameters. Click on Run (4) to generate the UMAPs.
+                <img src="/scexplorer/images/pre_umap.png" alt="QC Plot Tutorial Image" style="max-width: 100%; height: auto; margin-bottom: 20px;" />
+
+            </p>
+
+            <div style="
+                background-color: #e0f7fa;
+                border: 2px dashed black;
+                border-radius: 10px;
+                padding: 20px;
+                margin: 20px 0;
+                font-family: 'Poppins', sans-serif;
+            ">
+            <p>
+            In single-cell genomics, both the Louvain and Leiden algorithms are widely used for clustering cells based on their gene expression profiles. These algorithms help identify groups of cells (clusters) that share similar gene expression patterns, representing distinct cell types or states within a complex dataset. The Leiden algorithm is now preferred over Louvain for several reasons [5]. Leiden produces more meaningful and accurate clusters than Louvain, especially when dealing with complex datasets, such as single-cell genomics, where many small but biologically significant clusters may exist. Also, Leiden handles different resolutions better than Louvain. Resolution is a parameter that controls the granularity of clusters. Leiden tends to yield more stable results across various resolution settings, making it more versatile in capturing both fine-grained and broad biological structures. The number of neighbors (typically denoted as K in KNN) is a critical parameter that influences how cells are grouped and visualized in methods like UMAP and KNN-based clustering. The choice of K determines the structure of the KNN graph, which is used as the foundation for dimensionality reduction (e.g., UMAP) and clustering algorithms (e.g., Louvain or Leiden). Low K creates tighter, more localized neighborhoods, meaning that each cell is only connected to a few of its nearest neighbors. This can result in more fine-grained clusters that capture local variations, making it easier to detect small or rare cell populations. Higher K value connects each cell to more neighbors, creating a more connected graph. This tends to merge smaller clusters into larger ones, which can capture broader trends but may miss fine-grained or rare cell populations. UMAP is a dimensionality reduction technique widely used in single-cell genomics to visualize high-dimensional data in a lower-dimensional space. UMAP is particularly adept at preserving both the global and local structure of the data, making it a powerful tool for uncovering patterns and relationships that might be hidden in the high-dimensional space.
+            </p>
+
+            </div>   
+            <p>
+                After running the analysis, scExplorer will show four UMAPs where in (1) the Leiden Clusters are highlighted and in (2-4) % of Mitochondrial genes, Total Counts, and number of Genes per Counts are plotted, respectively. Next, click on DEA (5) to continue to the Differential Expression Analysis (DEA).
+                <img src="/scexplorer/images/post_umap.png" alt="QC Plot Tutorial Image" style="max-width: 100%; height: auto; margin-bottom: 20px;" />
+
+            </p>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="closeHelpModal()" style="padding: 10px 20px; background-color: #000000; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="UMAPResults" class="embeding-box" style="display: none;">
+        <h3>UMAP Results</h3>
+        <div id="plotsContainer" class="plots-container"></div>
+        <div class="button-container">
+            <div class="button-row">
+                <div class="upload-btn">
+                    <button id="continueToResults">Continue to DEA</button>
+                    <button id="exportData" class="custom-btn">Export</button>
+                    <div id="exportOptions" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tableOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:100;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background-color: white; padding: 20px; border-radius: 10px; width: 90%; height: 90%; overflow: hidden;">
+            <div class="tabulator-container" style="height: 95%;"><!-- Updated: Container for table with overflow -->
+                <div id="example-table"></div>
+            </div>
+            <button onclick="hideTableOverlay()">Close</button>
+        </div>
+    </div>
+    <script>
+        const BASE_URL = "http://apps.cienciavida.org/backend";
+
+        window.onload = function () {
+            const uuid = sessionStorage.getItem("uuid");
+            const analysisNameValue = sessionStorage.getItem("analysisName");
+            let cellObservationsPath = `${BASE_URL}/get_obs/uploads/${uuid}/${uuid}_obs.csv`;
+            let geneObservationsPath = `${BASE_URL}/get_var/uploads/${uuid}/${uuid}_var.csv`;
+            document.getElementById("analysisInfoBox").innerHTML = `
+                Analysis Name: ${analysisNameValue}<br>
+                UUID: ${uuid} <i class="fas fa-copy" onclick="copyToClipboard('${uuid}')" style="cursor: pointer; font-size: 14px;"></i><br>
+                Cell Observations: <a href="#" onclick="showTableOverlay('${cellObservationsPath}')">View Data</a><br>
+                Gene Observations: <a href="#" onclick="showTableOverlay('${geneObservationsPath}')">View Data</a><br>
+
+            `;
+            loadExistingPlots();
+        };
+        function showTableOverlay(csvPath) {
+            const tableOverlay = document.getElementById('tableOverlay');
+            const exampleTable = document.getElementById('example-table');
+        
+            tableOverlay.style.display = 'block';
+            fetchCSVData(csvPath)
+                .then(data => {
+                    displayTable(data);
+                })
+                .catch(error => {
+                    console.error("Error fetching or parsing CSV data:", error);
+                });
+        }
+        function openHelpModal() {
+            document.getElementById('helpModal').style.display = 'block';
+        }
+    
+        function closeHelpModal() {
+            document.getElementById('helpModal').style.display = 'none';
+        }
+    
+        window.onclick = function(event) {
+            var modal = document.getElementById('helpModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+        function displayTable(data) {
+            var table = new Tabulator("#example-table", {
+                data: data,
+                columns: generateColumns(data),
+                layout: "fitDataTable",
+                pagination: "local",
+                paginationSize: 14,
+                height: "100%",  // Fixed height for the table
+                movableColumns: true,  // Allow column movement
+                responsiveLayout: false,
+                tableBuilt: function() {
+                    // Ensure custom styles are applied
+                    document.querySelectorAll('.tabulator').forEach(function(element) {
+                        element.classList.add('tabulator');
+                    });
+                }
+            });
+        }
+        
+        function generateColumns(data) {
+            if (data.length === 0) return [];
+            
+            return Object.keys(data[0]).map(key => {
+                const column = {
+                    title: key,
+                    field: key,
+                    width: 160  // Ancho fijo para todas las columnas
+                };
+        
+                // Determinar si la columna contiene números
+                const isNumeric = data.some(row => {
+                    const value = row[key];
+                    return typeof value === 'number' || (typeof value === 'string' && !isNaN(parseFloat(value)));
+                });
+                
+                if (isNumeric) {
+                    column.formatter = threeDecimalFormatter;
+                } else {
+                    column.formatter = "plaintext";
+                }
+        
+                return column;
+            });
+        }
+        
+        function threeDecimalFormatter(cell, formatterParams, onRendered) {
+            let value = cell.getValue();
+            if (typeof value === 'number' || (typeof value === 'string' && !isNaN(parseFloat(value)))) {
+                return parseFloat(value).toFixed(3);
+            }
+            return value;
+        }
+        function fetchCSVData(url) {
+            return fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to fetch CSV data');
+                    return response.text();
+                })
+                .then(csvText => {
+                    return new Promise((resolve, reject) => {
+                        Papa.parse(csvText, {
+                            header: true,
+                            complete: results => {
+                                resolve(results.data);
+                            },
+                            error: error => {
+                                reject(error);
+                            }
+                        });
+                    });
+                });
+        } 
+        function hideTableOverlay() {
+            const tableOverlay = document.getElementById('tableOverlay');
+            tableOverlay.style.display = 'none';
+        }
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function () {
+            }, function (err) {
+                console.error('Could not copy text: ', err);
+            });
+        }
+
+        function loadExistingPlots() {
+            const embeddingPlotPaths = JSON.parse(sessionStorage.getItem("embedding_plot_paths"));
+            const PCAembeddingPlotPaths = JSON.parse(sessionStorage.getItem("pca_plot_paths"));
+            const clustreePlotPath = sessionStorage.getItem("clustree_plot_path");
+
+            if (PCAembeddingPlotPaths && PCAembeddingPlotPaths.length > 0) {
+                const PCAplotsContainer = document.getElementById("PCAplotsContainer");
+                PCAplotsContainer.style.display = "block";
+                document.getElementById('PCAResults').style.display = "block";
+                loadPlots(PCAplotsContainer, PCAembeddingPlotPaths, "plots_pca_embedding");
+            }
+
+            if (embeddingPlotPaths && embeddingPlotPaths.length > 0) {
+                const UMAPplotsContainer = document.getElementById("plotsContainer");
+                UMAPplotsContainer.style.display = "block";
+                document.getElementById('UMAPResults').style.display = "block";
+                document.getElementById('UMAPParameters').style.display = "block";
+                loadPlots(UMAPplotsContainer, embeddingPlotPaths, "plots_embedding");
+            }
+
+            if (clustreePlotPath) {
+                const plotsContainer = document.getElementById("PCAplotsContainer");
+                loadClustreePlot(plotsContainer, clustreePlotPath);
+            }
+        }
+
+        function loadPlots(container, plotPaths, basePath) {
+            container.innerHTML = "";
+            plotPaths.forEach((path, index) => {
+                if (index % 2 === 0) {
+                    const rowDiv = document.createElement("div");
+                    rowDiv.className = "plot-row";
+                    container.appendChild(rowDiv);
+                }
+
+                const lastRow = container.lastChild;
+                const iframe = document.createElement("iframe");
+                iframe.src = `${BASE_URL}/${basePath}/${path}`;
+                iframe.title = `Plot ${index + 1}`;
+                iframe.className = "plot-iframe";
+                iframe.style.width = "100%";
+
+                lastRow.appendChild(iframe);
+            });
+        }
+
+        function loadClustreePlot(container, plotPath) {
+            const url = `${BASE_URL}/plots_clustree/${plotPath}`;
+            const existingIframe = container.querySelector("iframe[title='Clustree Plot']");
+            if (existingIframe) {
+                container.removeChild(existingIframe);
+            }
+
+            const iframe = document.createElement("iframe");
+            iframe.src = url;
+            iframe.title = "Clustree Plot";
+            iframe.className = "plot-iframe";
+            iframe.style.height = "980px";
+            iframe.style.width = "100%";
+            container.appendChild(iframe);
+        }
+
+        document.getElementById("startPCAEmbedding").addEventListener("click", function () {
+            const uuid = sessionStorage.getItem("uuid");
+            const n_genesValue = document.getElementById("n_hvg").value;
+            const flavor_hvg = document.getElementById("flavor_hvg").value;
+            document.getElementById('loadingOverlay').style.display = 'block';
+
+            document.getElementById('PCAplotsContainer').style.display = "block";
+            document.getElementById('PCAResults').style.display = "block";
+            document.getElementById('UMAPParameters').style.display = "block";
+
+            let fetchUrl = `${BASE_URL}/pca?file_uuid=${uuid}&n_genes=${n_genesValue}&flavor=${flavor_hvg}`;
+
+            fetch(fetchUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    sessionStorage.setItem("pca_plot_paths", JSON.stringify(data.pca_plot_paths));
+                    document.getElementById('loadingOverlay').style.display = 'none';
+
+                    const plotsContainer = document.getElementById("PCAplotsContainer");
+                    plotsContainer.innerHTML = "";
+
+                    data.pca_plot_paths.forEach((path, index) => {
+                        if (index % 2 === 0) {
+                            const rowDiv = document.createElement("div");
+                            rowDiv.className = "plot-row";
+                            plotsContainer.appendChild(rowDiv);
+                        }
+
+                        const lastRow = plotsContainer.lastChild;
+                        const iframe = document.createElement("iframe");
+                        iframe.src = `${BASE_URL}/plots_pca_embedding/${path}`;
+                        iframe.title = `Plot ${index + 1}`;
+                        iframe.className = "plot-iframe";
+                        iframe.onload = function () {
+                            const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+                            const img = iframeDocument.querySelector('img');
+                            if (img) {
+                                img.style.maxWidth = '100%';
+                                img.style.maxHeight = '100%';
+                            }
+                        };
+                        lastRow.appendChild(iframe);
+                    });
+
+                    fetchClustree(uuid);
+
+                })
+                .catch((error) => {
+                    console.error("Error with embedding:", error);
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                });
+        });
+
+        function fetchClustree(uuid) {
+            document.getElementById('loadingOverlay').style.display = 'block';
+            let fetchUrl = `${BASE_URL}/clustree?uuid=${uuid}`;
+
+            fetch(fetchUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.blob();
+                })
+                .then((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const plotsContainer = document.getElementById("PCAplotsContainer");
+                    const iframe = document.createElement("iframe");
+                    iframe.src = url;
+                    iframe.title = "Clustree Plot";
+                    iframe.className = "plot-iframe";
+                    iframe.style.height = "980px";
+                    iframe.style.width = "100%";
+                    plotsContainer.appendChild(iframe);
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                })
+                .catch((error) => {
+                    console.error("Error fetching Clustree plot:", error);
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                });
+        }
+
+        document.getElementById("startEmbedding").addEventListener("click", function () {
+            const uuid = sessionStorage.getItem("uuid");
+            const n_neighborsValue = document.getElementById("n_neighbors").value;
+            const n_pcsValue = document.getElementById("n_pcs").value;
+            const resolutionValue = document.getElementById("resolution").value;
+            document.getElementById('UMAPResults').style.display = "block";
+            document.getElementById('loadingOverlay').style.display = 'block';
+
+            let fetchUrl = `${BASE_URL}/embedding/?file_uuid=${uuid}&n_neighbors=${n_neighborsValue}&n_pcs=${n_pcsValue}&resolution=${resolutionValue}`;
+
+            fetch(fetchUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    sessionStorage.setItem("embedding_plot_paths", JSON.stringify(data.embedding_plot_paths));
+                    document.getElementById('loadingOverlay').style.display = 'none';
+
+                    const plotsContainer = document.getElementById("plotsContainer");
+                    plotsContainer.innerHTML = "";
+
+                    data.embedding_plot_paths.forEach((path, index) => {
+                        if (index % 2 === 0) {
+                            const rowDiv = document.createElement("div");
+                            rowDiv.className = "plot-row";
+                            plotsContainer.appendChild(rowDiv);
+                        }
+
+                        const lastRow = plotsContainer.lastChild;
+                        const iframe = document.createElement("iframe");
+                        iframe.src = `${BASE_URL}/plots_embedding/${path}`;
+                        iframe.title = `Plot ${index + 1}`;
+                        iframe.className = "plot-iframe";
+                        iframe.style.width = "100%";
+                        iframe.onload = function () {
+                            const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+                            const img = iframeDocument.querySelector('img');
+                            if (img) {
+                                img.style.maxWidth = '100%';
+                                img.style.maxHeight = '100%';
+                            }
+                        };
+                        lastRow.appendChild(iframe);
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error with embedding:", error);
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                });
+        });
+
+        document.getElementById("continueToResults").addEventListener("click", function () {
+            window.location.href = "/scexplorer/dea";
+        });
+
+        document.getElementById('exportData').addEventListener('click', function () {
+            const exportOptions = document.getElementById('exportOptions');
+            exportOptions.style.display = exportOptions.style.display === 'none' ? 'block' : 'none';
+            exportOptions.innerHTML = '';
+
+            const options = [
+                { name: 'Export for Seurat', action: exportForSeurat },
+                { name: 'Export for Scanpy', action: exportForScanpy }
+            ];
+
+            const ul = document.createElement('ul');
+            options.forEach(opt => {
+                const li = document.createElement('li');
+                li.textContent = opt.name;
+                li.classList.add('export-option');
+                li.addEventListener('click', function () {
+                    opt.action();
+                    exportOptions.style.display = 'none';
+                });
+                ul.appendChild(li);
+            });
+
+            exportOptions.appendChild(ul);
+        });
+
+        function exportForSeurat() {
+            showLoadingOverlay('Exporting for Seurat...');
+
+            const uuid = sessionStorage.getItem("uuid");
+            if (!uuid) {
+                console.error("UUID not found in session storage.");
+                return;
+            }
+
+            const url = `http://apps.cienciavida.org/backend/seurat_export?uuid=${uuid}`;
+            const options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ uuid: uuid })
+            };
+
+            fetch(url, options)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to export file');
+                    hideLoadingOverlay();
+                    return response.blob();
+                })
+                .then(blob => {
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = `${uuid}.rds`; 
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(downloadUrl); 
+                })
+                .catch(error => {
+                    console.error("Error during file export:", error);
+                    hideLoadingOverlay();
+                });
+        }
+
+        function exportForScanpy() {
+            showLoadingOverlay('Exporting for Scanpy...');
+
+            const uuid = sessionStorage.getItem("uuid");
+            if (!uuid) {
+                console.error("UUID not found in session storage.");
+                return;
+            }
+
+            const url = `http://apps.cienciavida.org/backend/scanpy_export?uuid=${uuid}`;
+            const options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ uuid: uuid })
+            };
+
+            fetch(url, options)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to export file');
+
+                    return response.blob();
+                })
+                .then(blob => {
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = `${uuid}.h5ad`; 
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(downloadUrl); 
+                    hideLoadingOverlay();
+
+                })
+                .catch(error => {
+                    hideLoadingOverlay();
+
+                    console.error("Error during file export:", error);
+                    
+                });
+        }
+
+        function showLoadingOverlay(message) {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.querySelector('#loadingOverlay p');
+            loadingText.textContent = message;
+            loadingOverlay.style.display = 'block';
+        }
+
+        function hideLoadingOverlay() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const sections = document.querySelectorAll('section, .content-section, .uuid-box, .category-box, .preprocess-box, .embeding-box');
+            const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+            const showSidebarBtn = document.getElementById('showSidebarBtn');
+        
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                sections.forEach(section => {
+                    section.style.marginLeft = '250px';
+                    section.style.width = '80%';
+                });
+                toggleSidebarBtn.style.display = 'block';
+                showSidebarBtn.style.display = 'none';
+            } else {
+                sidebar.classList.add('hidden');
+                sections.forEach(section => {
+                    section.style.marginLeft = '150px';
+                    section.style.width = '80%';
+                });
+                toggleSidebarBtn.style.display = 'none';
+                showSidebarBtn.style.display = 'block';
+            }
+        }
+        
+        function showSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const sections = document.querySelectorAll('section, .content-section, .uuid-box, .category-box, .preprocess-box, .embeding-box');
+            const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+            const showSidebarBtn = document.getElementById('showSidebarBtn');
+        
+            sidebar.classList.remove('hidden');
+            sections.forEach(section => {
+                section.style.marginLeft = '250px';
+                section.style.width = '80%';
+            });
+            toggleSidebarBtn.style.display = 'block';
+            showSidebarBtn.style.display = 'none';
+        }
+    
+    </script>
+</body>
+</html>

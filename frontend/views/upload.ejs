@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>scExplorer</title>
+    <link rel="icon" href="/scexplorer/images/logo_sc_explorer_v1.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/scexplorer/css/styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+
+<body>
+    <aside class="sidebar">
+
+        <img src="/scexplorer/images/logo_sc_explorer_v1.png" alt="scExplorer logo" class="sidebar-logo" />
+        <h1 class="sidebar-title">scExplorer</h1>
+        <ul>
+            <li><a href="/scexplorer/"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="/scexplorer/integration"><i class="fas fa-layer-group"></i>Integration</a></li>
+            <li><a href="/scexplorer/upload"><span class="step-number">0</span> <i class="fas fa-upload"></i> Upload</a></li>
+            <li><a href="/scexplorer/preprocess"><span class="step-number">1</span> <i class="fas fa-cogs"></i> Preprocess</a></li>
+            <li><a href="/scexplorer/embedding"><span class="step-number">2</span> <i class="fas fa-vector-square"></i> Embedding</a></li>
+            <li><a href="/scexplorer/dea"><span class="step-number">3</span> <i class="fas fa-chart-bar"></i> DEA</a></li>
+            <li><a href="/scexplorer/visualization"><span class="step-number">4</span> <i class="fas fa-chart-area"></i> Visualization</a></li>
+            <li><a href="/scexplorer/results"><span class="step-number">5</span> <i class="fas fa-poll"></i> Results</a></li>
+        </ul>
+        <i id="toggleSidebarBtn" class="fas fa-angle-double-left white-icon" onclick="toggleSidebar()"></i>
+
+    </aside>
+    <button id="showSidebarBtn" class="show-sidebar-btn" onclick="toggleSidebar()"><i class="fas fa-angle-double-right"></i></button>
+
+    <section class="content-section">
+
+        <div class="header-buttons">
+            <button onclick="openExampleModal()">Tutorial</button>
+            <button onclick="openHelpModal()">Help</button>
+        </div>
+
+        <h2><i class="fas fa-upload"></i> Upload your data</h2>
+
+        <div class="row">
+            <div class="column third">
+                <div class="input-group">
+                    <label for="analysisName">Analysis Name:
+                        <i class="fas fa-info-circle" style="color:#000000; cursor: pointer;">
+                            <span class="tooltip">Enter a unique name for your analysis</span>
+                        </i>
+                    </label>
+                    <input type="text" id="analysisName" name="analysisName" placeholder="Code_id_pct1" required autocomplete="off" />
+                </div>
+            </div>
+            <div class="column third">
+                <div class="input-group">
+                    <label for="species">Species:
+                        <i class="fas fa-info-circle" style="color:#000000; cursor: pointer;">
+                            <span class="tooltip">Select a Specie for genes id parsing</span>
+                        </i>
+                    </label>
+                    <select id="species" name="species">
+                        <option value="human">Human</option>
+                        <option value="mouse">Mouse</option>
+                        <option value="zebrafish">Zebrafish</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="column third">
+                <div class="input-group">
+                    <label for="geneId">Gene ID:
+                        <i class="fas fa-info-circle" style="color:#000000; cursor: pointer;">
+                            <span class="tooltip">Select the Gene ID for the analysis</span>
+                        </i>
+                    </label>
+                    <select id="geneId" name="symbol">
+                        <option value="symbol" selected>Symbol</option>
+                        <option value="ensembl">Ensembl</option>
+                    </select>
+                </div>
+            </div>
+            <div class="column third">
+                <div class="input-group">
+                    <label for="email">Email:
+                        <i class="fas fa-info-circle" style="color:#000000; cursor: pointer;">
+                            <span class="tooltip">Sent email notification when dataset is uploaded</span>
+                        </i>
+                    </label>
+                    <input type="email" id="email" name="email" placeholder="Optional" required autocomplete="email" />
+                </div>
+            </div>
+        </div>
+        <div id="exampleModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Select an Example File</h2>
+                <select id="modalExampleFile" name="exampleFile" onchange="updateDescription()">
+                    <option value="example_human">Human PBMC</option>
+                    <option value="example_mouse">Mouse cortex, hippocampus and subventricular zone cells </option>
+                    <option value="example_zebrafish">Zebrafish cranial neural crest derived cells </option>
+                </select>
+                <p id="datasetDescription" style="padding: 15px; background-color: #f2f2f2; border-radius: 8px;"></p>
+                <button onclick="setExample()">Set Example</button>
+            </div>
+        </div>
+        <div id="helpModal" class="modal_help">
+            <div class="modal_help-content">
+                <span class="close" onclick="closeHelpModal()">&times;</span>
+                <h2>Upload</h2>
+                <p>
+                    The following tutorial uses the 3K PBMC data from 10x Genomics which is pre-loaded in scExplorer. Go to the Upload section located in the left menu (1), click on Tutorial (2) and select the 3K PBMC dataset (scExplorer have also pre-loaded two additional datasets from mouse cortex and from zebra fish cranial neural crest). If you are using your own dataset, you need to set a name for the analysis (3), indicate the species (4) and gene ID format (supports human, mouse, and zebrafish) (5), drag or select the desired file to upload (6), and click on Upload button (7). Optionally, if you want to receive notifications when the analysis is finished you can indicate your email in (8). In addition, you can run older analysis by indicating the UUID in (9).                </p>
+                <img src="/scexplorer/images/upload_tutorial.png" alt="Upload Tutorial Image" style="max-width: 100%; height: auto; margin-bottom: 20px;" />
+
+                <p>
+                    Go to the Upload section located in the left menu (1), click on Tutorial (2), and select the 3K PBMC dataset. (scExplorer has also pre-loaded two additional datasets from mouse cortex and zebrafish cranial neural crest.)
+                </p>
+                
+                <!-- Create the blue light rounded box with black dashed border -->
+                <div style="
+                    background-color: #e0f7fa;
+                    border: 2px dashed black;
+                    border-radius: 10px;
+                    padding: 20px;
+                    margin: 20px 0;
+                    font-family: 'Poppins', sans-serif;
+                ">
+                    <strong>¿What are h5ad, rds, and cellranger formats?</strong>
+                    <p>
+                        A single-cell object is a n × d matrix where n are observations (e.g. barcoded cells), and d are dimensional vectors that correspond to cell features or genes.
+                        <br><br>
+                        <strong>h5ad</strong> is a file format used for storing annotated data matrices, commonly in single-cell RNA-seq analysis. The format is hierarchical data and allows for efficient storage and retrieval of large datasets. An h5ad file typically contains a matrix of expression data, along with associated metadata, such as gene annotations and cell metadata, all stored in a single file. This format is widely used in the Python-based single-cell RNA-seq analysis ecosystem, particularly with the Scanpy library.
+                        <br><br>
+                        <strong>rds</strong> is a file format used in R, particularly by the Seurat package, which is another widely-used tool for single-cell RNA-seq data analysis. rds files store R objects in a binary format, allowing for efficient saving and loading of complex R data structures. In the context of single-cell RNA-seq, an rds file typically contains:
+                        <ul>
+                            <li>Seurat Objects: Comprehensive objects that include data matrices, metadata, analysis results, and other relevant information for single-cell analysis.</li>
+                            <li>Data Components: Including raw and normalized expression data, cell and gene annotations, and results from various analyses such as clustering and dimensionality reduction.</li>
+                        </ul>
+                        The rds format is advantageous because it preserves the integrity and structure of R objects, making it straightforward to resume analyses, share data, and ensure reproducibility.
+                        <br><br>
+                        <strong>cellranger</strong> format consists of three different files. A feature file containing information about measured genes, a barcode file that contains the list of cell barcodes identified in each experiment, and a sparse matrix that contains gene expression counts for each cell. These three files together form the core output of a cellranger run, representing the processed single-cell RNA-seq data in a structured and efficient manner, ready for downstream analysis.
+                        <br><br>
+                        These file formats are crucial for handling the complexity and volume of data generated in single-cell RNA-seq experiments, providing a structured and efficient means of storing and accessing this information. In public repositories such as the <a href="https://www.ncbi.nlm.nih.gov/geo/" target="_blank">Gene Expression Omnibus</a>, data is usually stored in the three file formats described here.
+                    </p>
+                </div>
+                <p>
+                    After loading the dataset, below you will see a Dataset Summary (1) and three quality control (QC) plots. The plot on the left shows the number of genes per cell (2), the plot in the middle shows the total counts or UMIs per cell (3), and the left shows the percentage of mitochondrial genes per cell (4). Each dot in the plots represents a unique cell. To continue, click on Continue to Preprocessing (5) and to export the quality plots click on Export (6).
+                </p>
+        
+                <!-- Add the uploaded image below the text -->
+                <img src="/scexplorer/images/upload_results.png" alt="QC Plot Tutorial Image" style="max-width: 100%; height: auto; margin-bottom: 20px;" />
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="closeHelpModal()" style="padding: 10px 20px; background-color: #000000; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+                </div>
+            </div>
+        </div>
+        <div class="upload-container" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+            <i class="fas fa-upload upload-icon"></i>
+            <p>Drag file(s) here to upload.</p>
+            <p id="droppedFileName"></p>
+            <p>Alternatively, you can select a file by <a href="#" onclick="document.getElementById('fileInput').click();">clicking here</a></p>
+            <input type="file" id="fileInput" style="display: none" multiple onchange="handleFileSelection()" />
+        </div>
+
+        <div class="upload-btn">
+            <button onclick="uploadFileToServer();">Upload</button>
+        </div>
+        <h3 class="dataset-title" style="display: none;">Dataset Summary</h3>
+        <p class="dataset-summary" style="display: none;"></p>
+        <h3 class="plots-title" style="display: none;">Quality Control Metrics</h3>
+        <div class="plots-container"></div>
+        <div class="button-container" style="display: none;">
+            <div class="button-row">
+                <div class="upload-btn">
+                    <button id="continueToResults">Continue to Preprocessing</button>
+                <div class="bottom-buttons">
+                    <button id="exportData" class="custom-btn">Export</button>
+                    <div id="exportOptions" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <img id="modalIcon" src="" alt="">
+                <p id="modalText">Some text in the Modal..</p>
+                <div id="uuidContainer" style="display: none">
+                    <div class="uuid-display-container">
+                        <textarea id="uuidText" readonly onclick="this.focus();this.select()"></textarea>
+                        <button onclick="copyToClipboard()">Copy</button>
+                    </div>
+                </div>
+                <span class="close">&times;</span>
+            </div>
+        </div>
+    </section>
+
+    <div class="uuid-box">
+        <label for="oldrun">Load Run with UUID:
+            <i class="fas fa-info-circle" style="color:#000000; cursor: pointer;">
+                <span class="tooltip">Run older analysis for visualization.</span>
+            </i>
+        </label>
+        <div class="input-group">
+            <input type="text" id="uuid_code" name="UUID" placeholder="6f233166-cc66-417b-96c6-f2e380dag8e3" required autocomplete="off" />
+            <button onclick="loadOldRun();">Load</button>
+        </div>
+    </div>
+
+    <div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:100;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);">
+            <div style="color:white; font-size:20px; text-align:center;">
+                <p>Uploading...</p>
+                <img src="/scexplorer/images/loading3.svg" alt="Loading..." style="display:block; margin:auto;"/>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultsRush" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:100;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);">
+            <div style="color:white; font-size:20px; text-align:center;">
+                <p>Running Pipeline...</p>
+                <img src="/scexplorer/images/loading3.svg" alt="Running Pipeline..." style="display:block; margin:auto;"/>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+
+        const datasetDescriptions = {
+            "example_human": "3k PBMCs from a Healthy Donor. Small amounts of RNA (~1pg RNA/cell) are typical for PBMCs.",
+            "example_mouse": "5k Mouse E18 Combined Cortex, Hippocampus, and Subventricular Zone Cells. These cells, from a C57BL/6 mouse, were used for both nuclei and multiplexed sample sequencing.",
+            "example_zebrafish": "Cells from cranial neural crest-derived zebrafish covering multiple developmental stages from embryonic (1.5, 2 dpf) to adult (210 dpf). Cells were used for transcriptome and chromatin accessibility studies."
+        };
+
+        const speciesMapping = {
+            "example_human": "human",
+            "example_mouse": "mouse",
+            "example_zebrafish": "zebrafish"
+        };
+
+        function updateDescription() {
+            const selectedValue = document.getElementById("modalExampleFile").value;
+            const description = datasetDescriptions[selectedValue] || "Please select a dataset.";
+            document.getElementById("datasetDescription").innerText = description;
+        }
+
+        document.getElementById("modalExampleFile").addEventListener("change", updateDescription);
+        document.getElementById("continueToResults").addEventListener("click", function () {
+            window.location.href = "/scexplorer/preprocess";
+        });
+        function setExample() {
+            var example = document.getElementById("modalExampleFile").value;
+            document.getElementById("analysisName").value = example;
+            document.getElementById("species").value = speciesMapping[example];
+            document.getElementById("exampleModal").style.display = "none";
+        }
+
+        function dragOverHandler(ev) {
+            ev.preventDefault();
+            document.querySelector(".upload-container").classList.add("drag-over");
+        }
+
+        function dropHandler(ev) {
+            ev.preventDefault();
+            document.querySelector(".upload-container").classList.remove("drag-over");
+
+            let files = [];
+            if (ev.dataTransfer.items) {
+                for (let i = 0; i < ev.dataTransfer.items.length; i++) {
+                    if (ev.dataTransfer.items[i].kind === "file") {
+                        let file = ev.dataTransfer.items[i].getAsFile();
+                        files.push(file);
+                    }
+                }
+            } else {
+                files = ev.dataTransfer.files;
+            }
+
+            handleFileList(files);
+        }
+
+        function handleFileSelection() {
+            const fileInput = document.getElementById("fileInput");
+            if (fileInput.files.length) {
+                handleFileList(fileInput.files);
+            }
+        }
+
+        function handleFileList(files) {
+            selectedFiles = [];
+            let fileNames = [];
+            for (let i = 0; i < files.length; i++) {
+                selectedFiles.push(files[i]);
+                fileNames.push(files[i].name);
+            }
+            document.getElementById("droppedFileName").innerText = fileNames.join(', ');
+        }
+
+        function uploadFileToServer() {
+            sessionStorage.clear();
+
+            const analysisName = document.getElementById("analysisName").value;
+            const species = document.getElementById("species").value;
+            const email = document.getElementById("email").value;
+            const geneId = document.getElementById("geneId").value;
+            const allowedAnalysisNamesWithoutFile = [
+                "example_human",
+                "example_mouse",
+                "example_zebrafish",
+                
+            ];
+
+            let proceedWithNoFile = allowedAnalysisNamesWithoutFile.includes(analysisName) && selectedFiles.length === 0;
+
+            if (!analysisName || !species || (selectedFiles.length === 0 && !proceedWithNoFile)) {
+                let missingFields = [];
+                if (!analysisName) missingFields.push("Analysis Name");
+                if (!species) missingFields.push("Species");
+                if (selectedFiles.length === 0 && !proceedWithNoFile) missingFields.push("File");
+
+                alert(`Please fill in the required fields: ${missingFields.join(", ")}`);
+                missingFields.forEach((field) => {
+                    document.querySelector(`label[for="${field.toLowerCase()}"]`).style.color = "red";
+                });
+                return;
+            }
+
+            document.getElementById('loadingOverlay').style.display = 'block';
+
+            const formData = new FormData();
+            for (let i = 0; i < selectedFiles.length; i++) {
+                formData.append("files", selectedFiles[i]);
+            }
+            formData.append("species", species);
+            formData.append("analysisName", analysisName);
+
+            let uploadUrl = `http://apps.cienciavida.org/backend/upload/`;
+            if (email && email.trim() !== "") {
+                formData.append("email", email);
+            }
+            formData.append("flavor", geneId);
+            fetch(uploadUrl, {
+                method: "POST",
+                body: formData,
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    sessionStorage.setItem("uuid", data.uuid);
+                    sessionStorage.setItem("analysisName", analysisName);
+                    sessionStorage.setItem("datasetDescription", JSON.stringify(data.dataset_description));
+                    sessionStorage.setItem("plots_path", JSON.stringify(data.plots_path));
+
+                    const datasetDescription = data.dataset_description;
+
+                    const summaryParagraph = document.querySelector(".dataset-summary");
+                    summaryParagraph.innerText = `The dataset contains ${datasetDescription.num_observations} cells and ${datasetDescription.num_variables} genes. It has an average of ${(Number(datasetDescription.mean_n_genes_by_counts)).toFixed(2)} genes per cell with a standard deviation of ${(Number(datasetDescription.std_n_genes_by_counts)).toFixed(2)}. The average total counts per cell is ${(Number(datasetDescription.mean_total_counts)).toFixed(2)} with a standard deviation of ${(Number(datasetDescription.std_total_counts)).toFixed(2)}. Lastly, the average of mitochondrial genes is ${(Number(datasetDescription.mean_pct_counts_mito)).toFixed(2)} with a standard deviation of ${(Number(datasetDescription.std_pct_counts_mito)).toFixed(2)}. The AnnData file contains ${datasetDescription.cell_observations} cell-level and ${datasetDescription.gene_observations} gene-level observations.`;
+
+                    document.getElementById('loadingOverlay').style.display = 'none';
+
+                    document.querySelector(".dataset-title").style.display = "block";
+                    summaryParagraph.style.display = "block";
+                    clearPlots();
+                    if (data.plots_path && data.plots_path.length > 0) {
+                        document.querySelector(".plots-title").style.display = "block";
+                        data.plots_path.forEach((plotUrl, index) => {
+                            displayPlot(plotUrl, index + 1);
+                        });
+                    }
+                    const buttonContainer = document.querySelector(".button-container");
+                    buttonContainer.style.display = "block";
+                })
+                .catch(error => {
+                    alert("Error uploading file: " + error.message);
+
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                });
+        }
+
+        function showLoadingOverlay(message) {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.querySelector('#loadingOverlay p');
+            loadingText.textContent = message;
+            loadingOverlay.style.display = 'block';
+        }
+
+        function hideLoadingOverlay() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function clearPlots() {
+            const container = document.querySelector(".plots-container");
+            container.innerHTML = '';
+        }
+
+        function displayPlot(plotUrl, index) {
+            const fastApiBaseUrl = "http://apps.cienciavida.org/backend/";
+            plotUrl = fastApiBaseUrl + plotUrl;
+            const container = document.querySelector(".plots-container");
+
+            const column = document.createElement("div");
+            column.className = "column third";
+
+            const iframe = document.createElement("iframe");
+            iframe.src = plotUrl;
+            iframe.style.width = "100%";
+            iframe.style.height = "450px";
+            iframe.style.border = "none";
+            iframe.style.marginTop = "10px";
+            
+            iframe.onload = function () {
+                const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+                const img = iframeDocument.querySelector('img');
+                if (img) {
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = '100%';
+                }
+            };
+            column.appendChild(iframe);
+            container.appendChild(column);
+        }
+
+        function openExampleModal() {
+            document.getElementById("exampleModal").style.display = "block";
+            updateDescription(); // Call this to update description for the default selected option
+        }
+        function openHelpModal() {
+            document.getElementById('helpModal').style.display = 'block';
+        }
+    
+        function closeHelpModal() {
+            document.getElementById('helpModal').style.display = 'none';
+        }
+    
+        window.onclick = function(event) {
+            var modal = document.getElementById('helpModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+        document.getElementsByClassName("close")[0].onclick = function () {
+            document.getElementById("exampleModal").style.display = "none";
+        }
+
+        window.onclick = function (event) {
+            var modal = document.getElementById("exampleModal");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const resizer = document.querySelector('.resizer');
+            let isResizing = false;
+
+            resizer.addEventListener('mousedown', function (event) {
+                isResizing = true;
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', function () {
+                    isResizing = false;
+                    document.removeEventListener('mousemove', handleMouseMove);
+                });
+            });
+
+            function handleMouseMove(event) {
+                if (isResizing) {
+                    const newWidth = event.clientX;
+                    document.querySelector('.sidebar').style.width = newWidth + 'px';
+                    document.querySelector('section').style.marginLeft = newWidth + 'px';
+                }
+            }
+        });
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const sections = document.querySelectorAll('.content-section, .uuid-box');
+            const showSidebarBtn = document.getElementById('showSidebarBtn');
+
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                sections.forEach(section => {
+                    section.style.marginLeft = '250px';
+                    section.style.width = '80%';
+
+                });
+                showSidebarBtn.style.display = 'none';
+            } else {
+                sidebar.classList.add('hidden');
+                sections.forEach(section => {
+                    section.style.marginLeft = '150px';
+                    section.style.width = '80%';
+
+                });
+                showSidebarBtn.style.display = 'block';
+            }
+        }
+
+        function showSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const sections = document.querySelectorAll('.content-section');
+            const showSidebarBtn = document.getElementById('showSidebarBtn');
+        
+            sidebar.classList.remove('hidden');
+            sections.forEach(section => {
+                section.style.marginLeft = '250px';
+                section.style.width = '80%';
+            });
+            showSidebarBtn.style.display = 'none';
+        }
+        
+        function loadOldRun() {
+            const uuid = document.getElementById("uuid_code").value;
+            if (!uuid) {
+                console.error("UUID not found.");
+                alert("Please enter a valid UUID.");
+            } else {
+                const paths = [
+                    `uploads/${uuid}/dea/mean_expression.html`,
+                    `uploads/${uuid}/dea/fold_change.html`
+                ];
+                sessionStorage.setItem("dea_plot_paths", JSON.stringify(paths));
+
+                const embeddingPlotPaths = [
+                    `uploads/${uuid}/embedding/umap_leiden.html`,
+                    `uploads/${uuid}/embedding/umap_percentage_mito.html`,
+                    `uploads/${uuid}/embedding/umap_total_counts.html`,
+                    `uploads/${uuid}/embedding/umap_n_genes_by_counts.html`
+                ];
+                sessionStorage.setItem("embedding_plot_paths", JSON.stringify(embeddingPlotPaths));
+                const processingPlotPaths = [
+                    `uploads/${uuid}/preprocess/n_genes_by_counts_violin.html`,
+                    `uploads/${uuid}/preprocess/total_counts_violin.html`,
+                    `uploads/${uuid}/preprocess/pct_counts_mito_violin.html`,
+                    `uploads/${uuid}/preprocess/total_counts_n_genes_by_count.html`,
+                    `uploads/${uuid}/preprocess/total_counts_mitochondrial_counts.html`,
+                    `uploads/${uuid}/preprocess/hvg.html`
+                ];
+                sessionStorage.setItem("preprocess_path", JSON.stringify(processingPlotPaths));
+
+                const plotsPath = [
+                    `uploads/${uuid}/qc_plots/n_genes_by_counts_violin.html`,
+                    `uploads/${uuid}/qc_plots/total_counts_violin.html`,
+                    `uploads/${uuid}/qc_plots/pct_counts_mito_violin.html`
+                ];
+                sessionStorage.setItem("plots_path", JSON.stringify(plotsPath));
+                sessionStorage.setItem("uuid", uuid);
+                sessionStorage.setItem("analysisName", "run_plots");
+                disableAllNavExceptResults();
+            }
+        }
+
+        function checkLinkAccess(event) {
+            if (event.currentTarget.classList.contains('non-clickable')) {
+                event.preventDefault();
+                alert("Please load an old run first.");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('loadOldRun').addEventListener('click', function () {
+                loadOldRun();
+            });
+        });
+
+        function disableAllNavExceptResults() {
+            const navLinks = document.querySelectorAll('.sidebar ul li a');
+            navLinks.forEach(link => {
+                if (!link.href.includes('results')) {
+                    link.classList.add('non-clickable');
+                } else {
+                    link.classList.remove('non-clickable');
+                }
+            });
+        }
+
+        function enableAllNav() {
+            const navLinks = document.querySelectorAll('.sidebar ul li a');
+            navLinks.forEach(link => {
+                link.classList.remove('non-clickable');
+            });
+        }
+
+        function startPreprocessing() {
+            return new Promise((resolve, reject) => {
+                const mito_threshold = 5;
+                const min_genes = 200;
+                const min_cells = 3;
+                const uuid = sessionStorage.getItem("uuid");
+
+                fetch(`http://apps.cienciavida.org/backend/process/${uuid}/?min_genes=${min_genes}&min_cells=${min_cells}&mito_threshold=${mito_threshold}`)
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {
+                        sessionStorage.setItem("preprocess_path", JSON.stringify(data.processing_plot_paths));
+
+                        resolve();
+                    })
+                    .catch((error) => {
+                        console.error("Error processing file:", error);
+                        reject(error);
+                    });
+            });
+        }
+
+        function startPCAEmbedding() {
+            return new Promise((resolve, reject) => {
+                const uuid = sessionStorage.getItem("uuid");
+                const n_genesValue = 2000;
+                const flavor_hvg = "seurat";
+
+                let fetchUrl = `http://localhost:8000/pca?file_uuid=${uuid}&n_genes=${n_genesValue}&flavor=${flavor_hvg}`;
+
+                fetch(fetchUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    }
+                })
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {
+                        sessionStorage.setItem("pca_plot_paths", JSON.stringify(data.pca_plot_paths));
+
+                        resolve();
+                    })
+                    .catch((error) => {
+                        console.error("Error with embedding:", error);
+                        reject(error);
+                    });
+            });
+        }
+
+
+        function startEmbedding() {
+            return new Promise((resolve, reject) => {
+                const uuid = sessionStorage.getItem("uuid");
+                const n_neighbors = 15;
+                const n_pcs = 15;
+
+                let fetchUrl = `http://localhost:8000/embedding/?file_uuid=${uuid}&n_neighbors=${n_neighbors}`;
+                if (n_pcs !== "Auto") {
+                    fetchUrl += `&n_pcs=${n_pcs}`;
+                }
+
+                fetch(fetchUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    }
+                })
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {
+                        sessionStorage.setItem("embedding_plot_paths", JSON.stringify(data.embedding_plot_paths));
+
+                        resolve();
+                    })
+                    .catch((error) => {
+                        console.error("Error with embedding:", error);
+                        reject(error);
+                    });
+            });
+        }
+        document.getElementById('exportData').addEventListener('click', function () {
+            const exportOptions = document.getElementById('exportOptions');
+            exportOptions.style.display = exportOptions.style.display === 'none' ? 'block' : 'none';
+            exportOptions.innerHTML = '';
+
+            const options = [
+                { name: 'Export for Seurat', action: exportForSeurat },
+                { name: 'Export for Scanpy', action: exportForScanpy }
+            ];
+
+            const ul = document.createElement('ul');
+            options.forEach(opt => {
+                const li = document.createElement('li');
+                li.textContent = opt.name;
+                li.classList.add('export-option');
+                li.addEventListener('click', function () {
+                    opt.action();
+                    exportOptions.style.display = 'none';
+                });
+                ul.appendChild(li);
+            });
+
+            exportOptions.appendChild(ul);
+        });
+
+        function startDEA() {
+            return new Promise((resolve, reject) => {
+                sessionStorage.removeItem("dea_plot_paths");
+                const uuid = sessionStorage.getItem("uuid");
+                const n_genesValue = 4;
+                const flavorValue = "mean_expression";
+                console.log(`Sending DEA request with UUID: ${uuid}, Genes: ${n_genesValue}, Flavor: ${flavorValue}`);
+
+                fetch(`http://localhost:8000/DEA/?file_uuid=${uuid}&n_genes=${n_genesValue}&flavor=${flavorValue}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {
+                        sessionStorage.setItem("dea_plot_paths", JSON.stringify(data));
+
+                        resolve();
+                    })
+
+                    .catch((error) => {
+                        console.error("Error with DEA:", error);
+                        reject(error);
+                    });
+            });
+        }
+
+        document.getElementById('runToResults').addEventListener('click', function () {
+            console.log('Iniciando procesamiento secuencial...');
+            document.getElementById('resultsRush').style.display = 'block';
+
+            startPreprocessing()
+                .then(() => {
+                    console.log('Preprocesamiento completado, iniciando PCA...');
+                    return startPCAEmbedding();
+                })
+                .then(() => {
+                    console.log('PCA completado, iniciando UMAP...');
+                    return startEmbedding();
+                })
+                .then(() => {
+                    console.log('Embedding completado, iniciando DEA...');
+                    return startDEA();
+                })
+                .then(() => {
+                    console.log('Todas las operaciones completadas exitosamente');
+                    document.getElementById('resultsRush').style.display = 'none';
+                    window.location.href = "/scexplorer/results";
+
+
+                })
+                .catch((error) => {
+                    console.error('Una o más operaciones fallaron:', error);
+                });
+        });
+
+        document.getElementById('exportBtn').addEventListener('click', function () {
+            const exportOptions = document.getElementById('exportOptionsPre');
+            exportOptions.style.display = exportOptions.style.display === 'none' ? 'block' : 'none';
+
+            exportOptions.innerHTML = '';
+
+            const options = [
+                { name: 'Export for Seurat', action: exportForSeurat },
+                { name: 'Export for Scanpy', action: exportForScanpy }
+            ];
+
+            const ul = document.createElement('ul');
+            options.forEach(opt => {
+                const li = document.createElement('li');
+                li.textContent = opt.name;
+                li.classList.add('export-option');
+                li.addEventListener('click', function () {
+                    opt.action();
+                    exportOptions.style.display = 'none';
+                });
+                ul.appendChild(li);
+            });
+
+            exportOptions.appendChild(ul);
+        });
+
+        function exportForSeurat() {
+            const uuid = sessionStorage.getItem("uuid");
+            if (!uuid) {
+                console.error("UUID not found in session storage.");
+                return;
+            }
+            showLoadingOverlay('Exporting for Seurat...');
+
+            const url = `http://apps.cienciavida.org/backend/seurat_export?uuid=${uuid}`;
+            const options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ uuid: uuid })
+            };
+
+            fetch(url, options)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to export file');
+                    return response.blob();
+                })
+                .then(blob => {
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = `${uuid}.rds`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(downloadUrl);
+                    hideLoadingOverlay();
+
+                })
+                .catch(error => {
+                    console.error("Error during file export:", error);
+                    hideLoadingOverlay();
+                });
+        }
+
+        function exportForScanpy() {
+            const uuid = sessionStorage.getItem("uuid");
+            if (!uuid) {
+                console.error("UUID not found in session storage.");
+                return;
+            }
+            showLoadingOverlay('Exporting for Scanpy...');
+            const url = `http://apps.cienciavida.org/backend/scanpy_export?uuid=${uuid}`;
+            const options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ uuid: uuid })
+            };
+
+            fetch(url, options)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to export file');
+                    return response.blob();
+                })
+                .then(blob => {
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = `${uuid}.h5ad`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(downloadUrl);
+                    hideLoadingOverlay();
+                })
+                .catch(error => {
+                    console.error("Error during file export:", error);
+                    hideLoadingOverlay();
+
+                });
+        }
+
+    </script>
+</body>
+
+</html>

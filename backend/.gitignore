@@ -1,0 +1,8 @@
+static/
+uploads/
+__pycache__
+testing/plotly.ipynb
+testing/check_datasets.py
+ensml.py
+testing/tets.h5ad
+examples/mouse_brain.h5ad

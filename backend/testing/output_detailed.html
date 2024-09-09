@@ -1,0 +1,66 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@9.0.0/dist/mermaid.min.js"></script>
+        <title>Mermaid Graph</title>
+    </head>
+    <body>
+        <div class="mermaid">
+        graph TD
+X((X: Main Data))
+X --> obs
+X --> var
+X --> layers
+X --> uns
+X --> obsm
+X --> varm
+X --> obsp
+obs --> n_genes_by_counts[n_genes_by_counts]
+obs --> log1p_n_genes_by_counts[log1p_n_genes_by_counts]
+obs --> total_counts[total_counts]
+obs --> log1p_total_counts[log1p_total_counts]
+obs --> pct_counts_in_top_50_genes[pct_counts_in_top_50_genes]
+obs --> pct_counts_in_top_100_genes[pct_counts_in_top_100_genes]
+obs --> pct_counts_in_top_200_genes[pct_counts_in_top_200_genes]
+obs --> pct_counts_in_top_500_genes[pct_counts_in_top_500_genes]
+obs --> total_counts_mito[total_counts_mito]
+obs --> log1p_total_counts_mito[log1p_total_counts_mito]
+obs --> pct_counts_mito[pct_counts_mito]
+obs --> n_genes[n_genes]
+obs --> leiden[leiden]
+var --> gene_ids[gene_ids]
+var --> mito[mito]
+var --> n_cells_by_counts[n_cells_by_counts]
+var --> mean_counts[mean_counts]
+var --> log1p_mean_counts[log1p_mean_counts]
+var --> pct_dropout_by_counts[pct_dropout_by_counts]
+var --> total_counts[total_counts]
+var --> log1p_total_counts[log1p_total_counts]
+var --> n_cells[n_cells]
+var --> highly_variable[highly_variable]
+var --> means[means]
+var --> dispersions[dispersions]
+var --> dispersions_norm[dispersions_norm]
+uns --> log1p[log1p]
+uns --> hvg[hvg]
+uns --> pca[pca]
+uns --> neighbors[neighbors]
+uns --> umap[umap]
+uns --> leiden[leiden]
+uns --> dendrogram_leiden[dendrogram_leiden]
+obsm --> X_pca[X_pca]
+obsm --> X_umap[X_umap]
+varm --> PCs[PCs]
+obsp --> distances[distances]
+obsp --> connectivities[connectivities]
+
+        </div>
+        <script>
+            mermaid.initialize({startOnLoad: true});
+        </script>
+    </body>
+    </html>
+    

@@ -1,0 +1,35 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@9.0.0/dist/mermaid.min.js"></script>
+        <title>Mermaid Graph</title>
+    </head>
+    <body>
+        <div class="mermaid">
+        graph TD
+X((X: Main Data))
+X --> obs
+X --> var
+X --> layers
+X --> uns
+X --> obsm
+X --> varm
+X --> obsp
+obs --> obs_count[Annotations: 13]
+var --> var_count[Annotations: 13]
+layers --> layers_count[Layers: 0]
+uns --> uns_count[Keys: 7]
+obsm --> obsm_count[Keys: 2]
+varm --> varm_count[Keys: 1]
+obsp --> obsp_count[Keys: 2]
+
+        </div>
+        <script>
+            mermaid.initialize({startOnLoad: true});
+        </script>
+    </body>
+    </html>
+    

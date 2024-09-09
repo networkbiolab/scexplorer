@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>scExplorer</title>
+    <link rel="icon" href="/scexplorer/images/logo_sc_explorer_v1.ico" type="image/x-icon"> 
+
+    <link rel="stylesheet" href="/scexplorer/css/styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+<body>
+    <aside class="sidebar">
+        <img src="/scexplorer/images/logo_sc_explorer_v1.png" alt="scExplorer logo" class="sidebar-logo" />
+        <h1 class="sidebar-title">scExplorer</h1>
+        <ul>
+            <li><a href="/scexplorer/"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="/scexplorer/integration"><i class="fas fa-layer-group"></i>Integration</a></li>
+            <li><a href="/scexplorer/upload"><span class="step-number">0</span> <i class="fas fa-upload"></i> Upload</a></li>
+            <li><a href="/scexplorer/preprocess"><span class="step-number">1</span> <i class="fas fa-cogs"></i> Preprocess</a></li>
+            <li><a href="/scexplorer/embedding"><span class="step-number">2</span> <i class="fas fa-vector-square"></i> Embedding</a></li>
+            <li><a href="/scexplorer/dea"><span class="step-number">3</span> <i class="fas fa-chart-bar"></i> DEA</a></li>
+            <li><a href="/scexplorer/visualization"><span class="step-number">4</span> <i class="fas fa-chart-area"></i> Visualization</a></li>
+            <li><a href="/scexplorer/results"><span class="step-number">5</span> <i class="fas fa-poll"></i> Results</a></li>
+        </ul>
+        <div class="resizer" onmousedown="startResizing(event)"></div>
+        <i id="toggleSidebarBtn" class="fas fa-angle-double-left white-icon" onclick="toggleSidebar()"></i>
+    </aside>
+    <button id="showSidebarBtn" class="show-sidebar-btn" onclick="toggleSidebar()"><i class="fas fa-angle-double-right"></i></button>
+
+    <div class="logo-container2">
+        <a href="https://cienciavida.org/" target="_blank">
+            <img src="/scexplorer/images/logo_fcv.png" alt="Logo FCV" class="header-logo" />
+        </a>
+    </div>
+    <div class="logo-container">
+        <a href="https://www.uss.cl/" target="_blank">
+            <img src="/scexplorer/images/logo_uss.png" alt="Logo USS" class="header-logo logo-uss" />
+        </a>
+    </div>
+    <section class="intro-section section">
+        <h2>Welcome to scExplorer 🧬</h2>
+        <p>ScExplorer is a web-based tool designed to simplify the complexities of scRNA-seq data analysis. It enables researchers to focus on deriving biological insights without requiring extensive computational expertise. This platform bridges analytical methods and biological inquiry, streamlining the process from data import to in-depth analysis.</p>
+    </section>
+    
+    <section class="key-features section">
+        <h3>Key Features:</h3>
+        <ul>
+            <li><strong>Integrated Analysis Pipeline:</strong> ScExplorer supports a comprehensive range of functionalities from preprocessing and quality checks to dimensional reduction and differential expression analysis.</li>
+            <li><strong>Interactive Data Visualization:</strong> Utilize dynamic, interactive graphs powered by Plotly for a real-time exploration of datasets, facilitating a deeper understanding of cellular diversity and expression patterns.</li>
+            <li><strong>Support for Python and R:</strong> ScExplorer incorporates Scanpy for Python and Seurat V4 for R, accommodating users across different scientific computing backgrounds. Additionally, it allows for the exportation of results in formats suitable for both Python (.h5ad) and R (.rds), facilitating seamless integration.</li>
+        </ul>
+    </section>
+
+    <section class="local-installation section">
+        <h3>Local Installation:</h3>
+        <p>ScExplorer can also be installed locally, supporting Linux, macOS, and Windows operating systems. This allows researchers to run the platform in their own environments, facilitating private data management and making use of local computational resources. For detailed installation instructions and access to additional resources, please visit our <a href="https://github.com/Sergio-Hernandez-Galaz/webapp" target="_blank">GitHub repository</a>.</p>
+    </section>
+
+    <div class="start-pipeline-container section">
+        <button onclick="window.location.href='/scexplorer/upload';" class="start-pipeline-btn">Start Pipeline ⛓️</button>
+    </div>
+
+    <div class="visit-counter" id="visitCounter">Visits: 0</div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const sections = document.querySelectorAll('.section');
+            const logoFCV = document.querySelector('.logo-container2'); // Logo de Fundación
+            const logoUSS = document.querySelector('.logo-container'); // Logo de USS
+            const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+            const showSidebarBtn = document.getElementById('showSidebarBtn');
+        
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                toggleSidebarBtn.style.display = 'block';
+                showSidebarBtn.style.display = 'none';
+                sections.forEach(section => {
+                    section.style.marginLeft = '250px';
+                    section.style.width = '80%'; // Reset the width to default (100%)
+                });
+                logoFCV.style.marginLeft = '280px';
+                logoUSS.style.marginLeft = '80%';
+            } else {
+                sidebar.classList.add('hidden');
+                toggleSidebarBtn.style.display = 'none';
+                showSidebarBtn.style.display = 'block';
+                sections.forEach(section => {
+                    section.style.marginLeft = '150px';
+                    section.style.width = '80%';
+                });
+                logoFCV.style.marginLeft = '180px'; // Move logo de Fundación 250px to the left
+                logoUSS.style.marginLeft = '70%'; // Move logo de USS to 970px to maintain the 250px shift
+            }
+        }
+        
+        
+
+        window.onload = function() {
+            fetch('http://apps.cienciavida.org/backend/visit_counter')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('visitCounter').innerText = 'Visits: ' + data.visit_count;
+                });
+        }
+
+        window.addEventListener('scroll', function() {
+            const logo1 = document.querySelector('.logo-container');
+            const logo2 = document.querySelector('.logo-container2');
+        
+            logo1.style.top = window.pageYOffset + 'px';
+            logo2.style.top = window.pageYOffset + 'px';
+        });
+
+        function startResizing(e) {
+            const sidebar = document.querySelector('.sidebar');
+            document.documentElement.addEventListener('mousemove', resize);
+            document.documentElement.addEventListener('mouseup', stopResizing);
+
+            function resize(e) {
+                sidebar.style.width = e.clientX + 'px';
+                document.querySelectorAll('.section').forEach(section => {
+                    section.style.marginLeft = e.clientX + 'px';
+                });
+                document.querySelectorAll('.logo-container, .logo-container2').forEach(logo => {
+                    logo.style.marginLeft = e.clientX + 'px';
+                });
+            }
+
+            function stopResizing() {
+                document.documentElement.removeEventListener('mousemove', resize);
+                document.documentElement.removeEventListener('mouseup', stopResizing);
+            }
+        }
+    </script>
+</body>
+</html>
