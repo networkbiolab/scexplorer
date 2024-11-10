@@ -24,6 +24,14 @@ Ensure you have Docker installed on your system.
    git clone https://github.com/networkbiolab/scexplorer
    cd scexplorer
 
+2. Start the application using Docker Compose:
+
+   ```bash
+   docker-compose up
+3. Access the application in your browser:
+
+GUI: http://localhost/scexplorer
+API Documentation: http://localhost/backend
 
 ## System Requirements
 
@@ -47,5 +55,4 @@ Feel free to report issues or contribute improvements via pull requests. We welc
 ---
 
 Start exploring your scRNA-seq data today with **scExplorer**! 🎉
-```
 
