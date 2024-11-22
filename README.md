@@ -5,7 +5,7 @@
 ## Live Demo
 
 You can run **ScExplorer** online at:  
-[http://apps.cienciavida.org/scexplorer/](http://apps.cienciavida.org/scexplorer/)
+[http://apps.cienciavida.org/scexplorer/](https://apps.cienciavida.org/scexplorer/)
 
 ---
 
